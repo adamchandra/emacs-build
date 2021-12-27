@@ -1,0 +1,32 @@
+* Building emacs
+** Add system deps
+#+begin_src bash
+
+sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
+sudo apt update
+sudo apt install libxpm-dev libgif-dev libjpeg-dev libpng-dev libtiff-dev libx11-dev libncurses5-dev automake autoconf texinfo libgtk2.0-dev gcc-10 g++-10 libgccjit0 libgccjit-10-dev libjansson4 libjansson-dev
+
+#+end_src
+
+
+***  The "trick" here is to add ppa:ubuntu-toolchain-r as the version of libgccjit shipped with Ubuntu 20.04 won't work for with Emacs native compilation.
+
+
+** Clone repo and switch to correct branch
+
+#+begin_src bash
+git clone https://github.com/flatwhatson/emacs.git emacs-arch
+git checkout pgtk-nativecomp
+cd emacs-arch
+export CC=/usr/bin/gcc-10 CXX=/usr/bin/gcc-10
+./autogen.sh
+./configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg --with-tiff --with-xft --with-xpm --with-gpm=no --with-xwidgets --with-modules --with-native-compilation --with-pgtk --with-json CFLAGS="-O3 -mtune=native -march=native -fomit-frame-pointer"
+#+end_src
+
+
+**  Compilation
+The final step is to compile Emacs. It will take very long as it needs to compile Emacs plus all the elisp code to native code. This step will only compile the elisp code that is part of Emacs, and not your own elisp code that is part of your configuration (we'll do that later).
+
+make -j2 NATIVE_FULL_AOT=1
+
+The -j2 part is to tell the compiler how many cores to use for the compilation. You can adjust here depending on your own hardware. Nevertheless it will take a long time.
